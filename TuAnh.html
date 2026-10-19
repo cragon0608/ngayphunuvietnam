@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Gửi Tú Anh </title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@600&family=Be+Vietnam+Pro:wght@300;400;600&display=swap&subset=vietnamese"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --pink: #ff6fae;
+        --rose: #ff3d84;
+        --gold: #ffd9a8;
+        --text: #fff1f6;
+        --serif: "Playfair Display", "Times New Roman", Georgia, serif;
+        --script: "Dancing Script", cursive;
+        --sans: "Be Vietnam Pro", sans-serif;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+      body {
+        background: #ffffff;
+        color: #222;
+        font-family: var(--sans);
+        transition: background 1.5s ease;
+      }
+
+      /* Nền vũ trụ huyền ảo điện ảnh */
+      body.magic-bg {
+        background: radial-gradient(circle at 50% 20%, #2b083d, #09010f 90%);
+        color: var(--text);
+      }
+
+      /* Hiệu ứng chớp sáng bùng nổ khi chuyển cảnh */
+      #flash-overlay {
+        position: fixed;
+        inset: 0;
+        background: #ffffff;
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.6s ease;
+      }
+      #flash-overlay.active {
+        opacity: 1;
+      }
+
+      #fx-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* BƯỚC 1: TRANG TRẮNG NGỚ NGẨN (Cú lừa) */
+      #stage-countdown {
+        position: fixed;
+        inset: 0;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        z-index: 20;
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+      #stage-countdown.hide {
+        opacity: 0;
+        transform: scale(1.15);
+        pointer-events: none;
+      }
+      .cd-title {
+        font-family: "Times New Roman", Times, serif;
+        font-size: clamp(4rem, 15vw, 12rem);
+        font-weight: bold;
+        color: #000000;
+        text-align: center;
+        transform: rotate(-2deg);
+        line-height: 1.1;
+        padding: 0 1rem;
+      }
+      #cd-number {
+        font-family: "Times New Roman", Times, serif;
+        font-size: clamp(2.5rem, 7vw, 4.5rem);
+        font-weight: bold;
+        color: #ff0000;
+        transform: rotate(3deg);
+        animation: wobble 0.5s infinite alternate;
+      }
+      @keyframes wobble {
+        from { transform: rotate(3deg) scale(1); }
+        to { transform: rotate(-3deg) scale(1.05); }
+      }
+
+      /* BƯỚC 2: CHỮ BAY LƯỢN & GIẢI MÃ */
+      #stage-decode {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        z-index: 5;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 1s, transform 1s;
+      }
+      #stage-decode.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #stage-decode.hide {
+        opacity: 0;
+        transform: scale(0.92);
+        pointer-events: none;
+      }
+      .line {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        font-family: var(--serif);
+        font-weight: 900;
+        line-height: 1.15;
+      }
+      .l1 { font-size: clamp(1.9rem, 8.5vw, 4rem); color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.6); }
+      .l2 { font-size: clamp(2.6rem, 12vw, 5.8rem); color: var(--pink); text-shadow: 0 0 40px var(--rose); }
+      .slot { display: inline-block; opacity: 0; min-width: 0.05em; }
+      .slot.sp { min-width: 0.35em; }
+      .slot.ok { opacity: 1; animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+      @keyframes pop {
+        0% { transform: scale(1.8); filter: brightness(3); }
+        100% { transform: none; filter: none; }
+      }
+      .fly {
+        position: fixed;
+        left: 0; top: 0;
+        z-index: 6;
+        pointer-events: none;
+        font-family: var(--serif);
+        font-weight: 900;
+        color: #ffb3d4;
+        text-shadow: 0 0 15px var(--rose);
+        will-change: transform;
+      }
+      #hint {
+        font-family: var(--script);
+        font-size: 1.8rem;
+        color: var(--gold);
+        animation: pulse 1.6s infinite;
+        margin-top: 1rem;
+        text-align: center;
+        padding: 0 1rem;
+        text-shadow: 0 0 12px rgba(255,217,168,0.6);
+      }
+      @keyframes pulse { 50% { opacity: 0.4; transform: scale(1.06); } }
+      #btn {
+        padding: 0.9rem 2.3rem;
+        border: 0;
+        border-radius: 99px;
+        font: 600 1.1rem var(--sans);
+        color: #fff;
+        cursor: pointer;
+        background: linear-gradient(135deg, #ff6fae, #ff3d84);
+        box-shadow: 0 0 35px rgba(255, 61, 132, 0.7);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+        z-index: 7;
+      }
+      #btn:hover { transform: scale(1.1); box-shadow: 0 0 50px rgba(255, 61, 132, 1); }
+
+      /* BƯỚC 3: THIỆP 3D GLASSMORPHISM ĐỈNH CAO */
+      #card {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        z-index: 8;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 1.2s ease;
+        overflow-y: auto;
+        perspective: 1000px;
+      }
+      #card.show { opacity: 1; pointer-events: auto; }
+      .box {
+        position: relative;
+        margin: auto;
+        max-width: 430px;
+        width: 100%;
+        text-align: center;
+        padding: 2.2rem 1.5rem 1.8rem;
+        border-radius: 30px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
+        border: 1px solid rgba(255, 182, 213, 0.5);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        box-shadow: 0 35px 100px rgba(255, 61, 132, 0.45), inset 0 0 50px rgba(255, 150, 200, 0.12);
+        transform: scale(0.8) translateY(40px) rotateX(10deg);
+        transition: transform 1.2s cubic-bezier(0.2, 1.4, 0.3, 1);
+        will-change: transform;
+      }
+      #card.show .box { transform: scale(1) translateY(0) rotateX(0deg); }
+      .badge {
+        display: inline-block;
+        padding: 0.3rem 1rem;
+        border-radius: 99px;
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #2b083d;
+        font-weight: 700;
+        background: linear-gradient(90deg, #ffd9a8, #ffb3d4);
+        box-shadow: 0 0 25px rgba(255, 217, 168, 0.7);
+      }
+      .big { font-size: 2.4rem; margin: 0.6rem 0 0; animation: beat 1.2s infinite; }
+      @keyframes beat {
+        15% { transform: scale(1.3); }
+        30% { transform: scale(1); }
+        45% { transform: scale(1.2); }
+      }
+      .t1 { font-family: var(--script); font-size: 1.4rem; color: var(--gold); margin: 0; text-shadow: 0 0 10px rgba(255,217,168,0.5); }
+      .t2 {
+        font-family: var(--serif);
+        font-size: clamp(1.8rem, 8vw, 2.7rem);
+        margin: 0 0 0.3rem;
+        background: linear-gradient(90deg, #ff9ec8, #fff, #ffd9a8, #ff6fae, #ff9ec8);
+        background-size: 250% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: sh 5s linear infinite;
+      }
+      @keyframes sh { to { background-position: -250% 0; } }
+      .orn {
+        display: flex; align-items: center; gap: 0.8rem; justify-content: center; color: var(--pink); margin: 0.6rem 0 1.2rem;
+      }
+      .orn:before, .orn:after {
+        content: ""; height: 1px; width: 25%; background: linear-gradient(90deg, transparent, var(--pink));
+      }
+      .orn:after { transform: scaleX(-1); }
+      #msg { font-weight: 300; font-size: 0.96rem; line-height: 1.7; margin: 0 0.3rem 1rem; color: #ffe6f0; }
+
+      /* THẺ CÀO MA THUẬT SIÊU ĐẸP */
+      .scratch-container {
+        position: relative;
+        width: 100%;
+        height: 140px;
+        border-radius: 18px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px dashed rgba(255, 182, 213, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0.8rem 0;
+        box-shadow: inset 0 3px 15px rgba(0,0,0,0.4);
+      }
+      .hidden-message {
+        position: absolute;
+        inset: 0; /* Trải rộng toàn bộ khung */
+        padding: 1rem;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: var(--gold);
+        font-family: var(--sans);
+        z-index: 1;
+        text-align: center;
+        overflow-y: auto; /* Cho phép lướt/cuộn dọc xuống dưới khi văn bản dài */
+        box-sizing: border-box;
+      }
+      #scratchCanvas { position: absolute; top: 0; left: 0; cursor: pointer; z-index: 2; touch-action: none; transition: opacity 0.8s ease, transform 0.8s ease; }
+    </style>
+  </head>
+  <body>
+    <div id="flash-overlay"></div>
+    <canvas id="fx-canvas"></canvas>
+
+    <!-- BƯỚC 1: ĐẾM NGƯỢC NỀN TRẮNG (Cú lừa) -->
+    <div id="stage-countdown">
+      <div class="cd-title">CHÚC MỪNG 20/10</div>
+      <div id="cd-number">3</div>
+    </div>
+
+    <!-- BƯỚC 2: CHỮ BAY LƯỢN & GIẢI MÃ -->
+    <div id="stage-decode">
+      <div class="line l1" id="l1"></div>
+      <div class="line l2" id="l2"></div>
+      <div id="hint">✦ Có một thông điệp đang bay lạc... ✦</div>
+      <button id="btn">Giải mã 💌</button>
+    </div>
+
+    <!-- BƯỚC 3: THIỆP CHÍNH & THẺ CÀO -->
+    <div id="card">
+      <div class="box" id="cardBox">
+        <span class="badge">20 · 10 &nbsp;Ngày Phụ nữ Việt Nam</span>
+        <div class="big">🐧</div>
+        <p class="t1">Gửi riêng cho</p>
+        <h1 class="t2" id="name"></h1>
+        <div class="orn">❀ ❤ ❀</div>
+        <div id="msg"></div>
+
+        <!-- THẺ CÀO BÍ MẬT -->
+        <div class="scratch-container" id="scratchBox">
+          <div class="hidden-message" id="hiddenMsgText">
+            Haluu Tú Anh!!! Nghĩ đến giờ vẫn ngại nhưng ksao, đã làm r thì làm cho trót :)). T muốn chúc c 20/10 thật vui vẻ nha. Chúc c luôn vui vẻ, hạnh phúc, gặp thật nhiều điều tốt đẹp và dù có chuyện gì cũng đừng đánh mất sự nhiệt huyết của bản thân nhé. Nghĩ lại mới nhớ t với c để mà kỉ niệm đáng nhớ nhất chắc chỉ có lúc t thích KC nên t vs c có nhiều bất đồng ghê :))). Ngại ghê nma nếu quay lại đc lúc đấy t chỉ muốn đấm cho thg Long 8 lúc đấy 1 trận th. Nghĩ lại thì tớ vẫn thấy mình có những lúc hơi trẻ con, nên mong c đừng để bụng nhé. Tiếc là 2 đứa giờ ở 2 trường khác nhau r nên k có nhiều cơ hội để thân hơn, nếu đc t vẫn muốn thân vs c hơn nữa. Mong rằng sau này c sẽ luôn có những người thật lòng trân trọng c, có đủ dũng khí để theo đuổi những điều mình muốn và luôn tìm được niềm vui trong những điều nhỏ bé nhất. P/s hi vọng có thể có Locket của Golden Tú Anh !!! 
+          </div>
+          <canvas id="scratchCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const CFG = {
+        l1: "CHÚC MỪNG 20/10",
+        l2: "Tú Anh",
+        name: "Tú Anh",
+        intro: "Nhân ngày 20/10, tuy trông hơi ngại nhưng tớ có món quà nhỏ dành cho c. Cào ở dưới để mở quà nha 👇",
+      };
+
+      const POOL = "ABCDEFGHIKLMNOPQRSTUVXYĂÂÊÔƠƯ0123456789";
+      const rnd = (a) => Array.isArray(a) || typeof a === "string" ? a[Math.floor(Math.random() * a.length)] : 0;
+      const R = (a, b) => Math.random() * (b - a) + a;
+      const $ = (id) => document.getElementById(id);
+
+      $("name").textContent = CFG.name;
+      $("msg").textContent = CFG.intro;
+
+      // --- HỆ THỐNG CANVAS PHÁO HOA, SAO BĂNG & HIỆU ỨNG ĐỈNH CAO ---
+      function initMagicEffects() {
+        const canvas = $("fx-canvas");
+        const ctx = canvas.getContext("2d");
+        let width, height;
+        let particles = [], fireworks = [], stars = [], shootingStars = [];
+
+        function resize() {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resize);
+        resize();
+
+        for (let i = 0; i < 120; i++) {
+          stars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 2.2, alpha: Math.random() });
+        }
+
+        // Sao băng chớp nhoáng
+        class ShootingStar {
+          constructor() { this.reset(); }
+          reset() {
+            this.x = Math.random() * width * 1.2;
+            this.y = 0;
+            this.len = Math.random() * 80 + 40;
+            this.speed = Math.random() * 10 + 6;
+            this.alpha = Math.random() * 0.8 + 0.2;
+            this.active = false;
+          }
+          update() {
+            if (!this.active) {
+              if (Math.random() < 0.015) this.active = true;
+              return;
+            }
+            this.x -= this.speed;
+            this.y += this.speed;
+            if (this.x < 0 || this.y > height) this.reset();
+          }
+          draw() {
+            if (!this.active) return;
+            ctx.save();
+            ctx.strokeStyle = `rgba(255, 255, 255, ${this.alpha})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + this.len, this.y - this.len);
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+        for (let i = 0; i < 3; i++) shootingStars.push(new ShootingStar());
+
+        class Firework {
+          constructor(x, y) {
+            this.x = x; this.y = y;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 6 + 2;
+            this.vx = Math.cos(angle) * speed;
+            this.vy = Math.sin(angle) * speed;
+            this.alpha = 1;
+            this.color = rnd(["#ff6fae", "#ffd9a8", "#ff3d84", "#ffffff", "#e0b3ff", "#ff9ec8"]);
+          }
+          update() { this.x += this.vx; this.y += this.vy; this.vy += 0.06; this.alpha -= 0.018; }
+          draw() {
+            ctx.save(); ctx.globalAlpha = Math.max(0, this.alpha);
+            ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, 2.8, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        function launchFW(x, y) {
+          for (let i = 0; i < 45; i++) fireworks.push(new Firework(x, y));
+        }
+
+        class Particle {
+          constructor() { this.reset(); }
+          reset() {
+            this.x = Math.random() * width; this.y = -20;
+            this.size = Math.random() * 16 + 10;
+            this.speedY = Math.random() * 1.3 + 0.6;
+            this.char = rnd(["❤", "💖", "🌸", "✨", "💫", "💗"]);
+            this.alpha = Math.random() * 0.6 + 0.4;
+          }
+          update() { this.y += this.speedY; if (this.y > height + 20) this.reset(); }
+          draw() {
+            ctx.save(); ctx.globalAlpha = this.alpha;
+            ctx.font = `${this.size}px sans-serif`; ctx.fillText(this.char, this.x, this.y);
+            ctx.restore();
+          }
+        }
+
+        for (let i = 0; i < 40; i++) particles.push(new Particle());
+
+        function loop() {
+          ctx.clearRect(0, 0, width, height);
+          stars.forEach(s => {
+            ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+            ctx.fillRect(s.x, s.y, s.size, s.size);
+          });
+          shootingStars.forEach(ss => { ss.update(); ss.draw(); });
+          particles.forEach(p => { p.update(); p.draw(); });
+          fireworks.forEach((f, idx) => {
+            f.update(); f.draw(); if (f.alpha <= 0) fireworks.splice(idx, 1);
+          });
+          requestAnimationFrame(loop);
+        }
+        loop();
+
+        // Pháo hoa tự động bắn liên tục
+        setInterval(() => {
+          launchFW(Math.random() * width, Math.random() * (height * 0.6));
+        }, 900);
+
+        window.triggerMassiveFireworks = function() {
+          for (let i = 0; i < 6; i++) {
+            setTimeout(() => launchFW(Math.random() * width, Math.random() * height), i * 180);
+          }
+        };
+      }
+
+      // --- XỬ LÝ BƯỚC 1: ĐẾM NGƯỢC NỀN TRẮNG (CÚ LỪA + CHỚP SÁNG) ---
+      let cdCount = 3;
+      const cdNumberEl = $("cd-number");
+      const stageCd = $("stage-countdown");
+      const stageDecode = $("stage-decode");
+      const flashOverlay = $("flash-overlay");
+
+      const cdInterval = setInterval(() => {
+        cdCount--;
+        if (cdCount > 0) {
+          cdNumberEl.textContent = cdCount;
+        } else if (cdCount === 0) {
+          cdNumberEl.textContent = "💥";
+        } else {
+          clearInterval(cdInterval);
+          
+          // Kích hoạt hiệu ứng chớp sáng điện ảnh
+          flashOverlay.classList.add("active");
+          setTimeout(() => {
+            document.body.classList.add("magic-bg");
+            stageCd.classList.add("hide");
+            stageDecode.classList.add("show");
+            initMagicEffects();
+            initDecodeStage();
+            
+            setTimeout(() => flashOverlay.classList.remove("active"), 400);
+          }, 300);
+        }
+      }, 1000);
+
+      // --- XỬ LÝ BƯỚC 2: CHỮ BAY LƯỢN & GIẢI MÃ ---
+      const flyers = [];
+      let W = innerWidth, H = innerHeight, decoding = false, landed = 0, total = 0;
+
+      function build(el, text, cls) {
+        [...text].forEach((c) => {
+          const s = document.createElement("span");
+          s.className = "slot" + (c === " " ? " sp" : "");
+          s.textContent = c === " " ? "\u00a0" : c;
+          el.appendChild(s);
+          if (c !== " ") flyers.push({ slot: s, c, cls, real: true });
+        });
+      }
+
+      function initDecodeStage() {
+        build($("l1"), CFG.l1, "l1");
+        build($("l2"), CFG.l2, "l2");
+        total = flyers.length;
+
+        flyers.forEach((f) => mk(f, parseFloat(getComputedStyle(f.slot).fontSize)));
+        for (let i = 0; i < 40; i++) {
+          const f = { real: false, c: "", cls: "" };
+          flyers.push(f);
+          mk(f, R(18, 56));
+        }
+        requestAnimationFrame(tick);
+      }
+
+      function mk(f, size) {
+        const e = document.createElement("div");
+        e.className = "fly";
+        e.style.fontSize = size + "px";
+        e.style.opacity = f.real ? 1 : 0.6;
+        e.style.color = rnd(["#ffb3d4", "#ff6fae", "#ffd9a8", "#fff"]);
+        e.textContent = rnd(POOL);
+        document.body.appendChild(e);
+        Object.assign(f, {
+          el: e, x: R(0, W), y: R(0, H),
+          vx: R(-2.5, 2.5), vy: R(-2.5, 2.5),
+          rot: R(0, 360), vr: R(-4, 4), t: R(0, 6), sc: 1, state: "fly"
+        });
+      }
+
+      function tick() {
+        flyers.forEach((f) => {
+          if (f.state === "done" || !f.el) return;
+          if (f.state === "fly") {
+            f.vx += R(-0.1, 0.1); f.vy += R(-0.1, 0.1);
+            f.x += f.vx; f.y += f.vy; f.rot += f.vr; f.t += 0.04;
+            f.sc = 1 + Math.sin(f.t) * 0.3;
+            if (f.x < 0 || f.x > W) f.vx *= -1;
+            if (f.y < 0 || f.y > H) f.vy *= -1;
+          } else {
+            const k = 0.08;
+            f.x += (f.tx - f.x) * k;
+            f.y += (f.ty - f.y) * k;
+            f.rot += (0 - f.rot) * k;
+            f.sc += (1 - f.sc) * k;
+            if (Math.hypot(f.tx - f.x, f.ty - f.y) < 1.2) land(f);
+          }
+          f.el.style.transform = `translate(${f.x}px,${f.y}px) translate(-50%,-50%) rotate(${f.rot}deg) scale(${f.sc})`;
+        });
+        requestAnimationFrame(tick);
+      }
+
+      function land(f) {
+        f.state = "done";
+        f.el.remove();
+        f.slot.classList.add("ok");
+        if (++landed === total) {
+          $("hint").textContent = "Giải mã thành công 💖";
+          if (window.triggerMassiveFireworks) window.triggerMassiveFireworks();
+          setTimeout(showCard, 1200);
+        }
+      }
+
+      setInterval(() => flyers.forEach((f) => {
+        if (f.el && f.state !== "done" && Math.random() < 0.4) f.el.textContent = rnd(POOL);
+      }), 150);
+
+      function decode() {
+        if (decoding) return;
+        decoding = true;
+        $("btn").style.display = "none";
+        $("hint").textContent = "Các chữ cái đang tìm về nhau... ✨";
+        let i = 0;
+        flyers.forEach((f) => {
+          if (f.real) {
+            setTimeout(() => {
+              const r = f.slot.getBoundingClientRect();
+              f.tx = r.left + r.width / 2;
+              f.ty = r.top + r.height / 2;
+              f.state = "go";
+              f.el.textContent = f.c;
+            }, 400 + i++ * 120);
+          } else {
+            setTimeout(() => { f.el.style.opacity = 0; }, 400);
+            setTimeout(() => { f.state = "done"; f.el.remove(); }, 1800);
+          }
+        });
+      }
+
+      $("btn").onclick = decode;
+      $("stage-decode").addEventListener("click", (e) => {
+        if (e.target.id !== "btn") decode();
+      });
+
+      // Hiệu ứng nghiêng 3D cho thiệp
+      const cardBox = $("cardBox");
+      window.addEventListener("mousemove", (e) => {
+        if (!document.getElementById("card").classList.contains("show")) return;
+        const x = (window.innerWidth / 2 - e.clientX) / 20;
+        const y = (window.innerHeight / 2 - e.clientY) / 20;
+        cardBox.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${-x}deg) scale(1.02)`;
+      });
+
+      // --- XỬ LÝ BƯỚC 3: THẺ CÀO 60% TỰ ĐỘNG BÙNG NỔ ---
+      function showCard() {
+        $("stage-decode").classList.add("hide");
+        $("card").classList.add("show");
+        initScratchCard();
+      }
+
+      function initScratchCard() {
+        const container = $("scratchBox");
+        const canvas = $("scratchCanvas");
+        const ctx2 = canvas.getContext("2d");
+
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+
+        let gradient = ctx2.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, "#e4d0eb");
+        gradient.addColorStop(0.5, "#bc9fc4");
+        gradient.addColorStop(1, "#e4d0eb");
+        ctx2.fillStyle = gradient;
+        ctx2.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx2.font = "bold 15px 'Be Vietnam Pro', sans-serif";
+        ctx2.fillStyle = "#4a1240";
+        ctx2.textAlign = "center";
+        ctx2.textBaseline = "middle";
+        ctx2.fillText("✨ Cào vào đây để nhận quà ✨", canvas.width / 2, canvas.height / 2);
+
+        let isDrawing = false;
+        let isCleared = false;
+
+        function checkProgress() {
+          if (isCleared) return;
+          const imgData = ctx2.getImageData(0, 0, canvas.width, canvas.height);
+          const pixels = imgData.data;
+          let transparent = 0, totalSample = 0;
+          const step = 16;
+          for (let i = 3; i < pixels.length; i += 4 * step) {
+            totalSample++;
+            if (pixels[i] === 0) transparent++;
+          }
+          if (transparent / totalSample >= 0.6) {
+            isCleared = true;
+            canvas.style.transform = "scale(1.08)";
+            canvas.style.opacity = "0";
+            if (window.triggerMassiveFireworks) window.triggerMassiveFireworks();
+            setTimeout(() => canvas.remove(), 800);
+          }
+        }
+
+        function scratch(e) {
+          if (!isDrawing || isCleared) return;
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+          const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+          if (!clientX || !clientY) return;
+
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+
+          ctx2.globalCompositeOperation = "destination-out";
+          ctx2.beginPath();
+          ctx2.arc(x, y, 26, 0, Math.PI * 2);
+          ctx2.fill();
+
+          checkProgress();
+        }
+
+        canvas.addEventListener("mousedown", () => isDrawing = true);
+        canvas.addEventListener("mousemove", scratch);
+        window.addEventListener("mouseup", () => isDrawing = false);
+
+        canvas.addEventListener("touchstart", () => isDrawing = true);
+        canvas.addEventListener("touchmove", scratch);
+        window.addEventListener("touchend", () => isDrawing = false);
+      }
+    </script>
+  </body>
+</html>
