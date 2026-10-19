@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Gửi Quỳnh Chi 💖</title>
+    <title>Gửi Quỳnh Chi</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@600&family=Be+Vietnam+Pro:wght@300;400;600&display=swap&subset=vietnamese"
       rel="stylesheet"
@@ -282,6 +282,15 @@
       #scratchCanvas { position: absolute; top: 0; left: 0; cursor: pointer; z-index: 2; touch-action: none; transition: opacity 0.8s ease, transform 0.8s ease; }
     </style>
   </head>
+    <script>
+  const secretPassword = "11062008"; 
+  
+  let password = prompt("Nhập sinh nhật của bản thân vô (VD:01022000)");
+  if (password !== secretPassword) {
+    alert("Sai mật khẩu mất rồi! 😢");
+    document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; font-family:sans-serif;'>🔒 Trang web này được bảo mật riêng tư.</h2>";
+  }
+</script>
   <body>
     <div id="flash-overlay"></div>
     <canvas id="fx-canvas"></canvas>
