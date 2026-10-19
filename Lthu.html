@@ -282,14 +282,44 @@
       #scratchCanvas { position: absolute; top: 0; left: 0; cursor: pointer; z-index: 2; touch-action: none; transition: opacity 0.8s ease, transform 0.8s ease; }
     </style>
   </head>
-  <script>
-  const secretPassword = "04072008"; 
-  
-  let password = prompt("Nhập sinh nhật của bản thân vô (VD:01022000)");
-  if (password !== secretPassword) {
-    alert("Sai mật khẩu mất rồi! 😢");
-    document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; font-family:sans-serif;'>🔒 Trang web này được bảo mật riêng tư.</h2>";
+<!-- LỚP KHÓA BẢO MẬT MẬT KHẨU -->
+<div id="lock-screen" style="position:fixed; inset:0; background:radial-gradient(circle at 50% 20%, #2b083d, #09010f 90%); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-family:'Be Vietnam Pro', sans-serif; text-align:center; padding:20px;">
+  <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,182,213,0.4); padding:30px 20px; border-radius:24px; backdrop-filter:blur(20px); max-width:350px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+    <h2 style="margin-top:0; font-family:'Playfair Display', serif; color:#ffd9a8;">🔒 Thiệp Riêng Tư</h2>
+    <p style="font-size:0.9rem; color:#ffe6f0; margin-bottom:20px;">Nhập sinh nhật bản thân để mở món quà bí mật này nhé:(VD:01022008)</p>
+    <input type="password" id="pwd-input" placeholder="Nhập mật khẩu..." style="width:80%; padding:10px 15px; border-radius:99px; border:1px solid rgba(255,182,213,0.6); background:rgba(255,255,255,0.05); color:#fff; font-size:15px; outline:none; text-align:center; margin-bottom:12px;">
+    <br>
+    <button onclick="checkPassword()" style="padding:10px 25px; border-radius:99px; border:none; background:linear-gradient(135deg, #ff6fae, #ff3d84); color:#fff; font-weight:600; cursor:pointer; box-shadow:0 0 20px rgba(255,61,132,0.5);">Mở khóa 💌</button>
+    <p id="error-msg" style="color:#ff6b81; margin-top:12px; font-size:0.85rem; min-height:20px;"></p>
+  </div>
+</div>
+
+<script>
+  function checkPassword() {
+    // Đặt mật khẩu bạn muốn tại đây (ví dụ: "honglac")
+    const secretPassword = "04072008"; 
+    const userInput = document.getElementById("pwd-input").value;
+    
+    if (userInput === secretPassword) {
+      // Đúng mật khẩu -> Ẩn bảng khóa đi để vào thiệp
+      const lockScreen = document.getElementById("lock-screen");
+      lockScreen.style.opacity = "0";
+      lockScreen.style.transition = "opacity 0.6s ease";
+      setTimeout(() => lockScreen.remove(), 600);
+    } else {
+      // Sai mật khẩu -> Báo lỗi và giữ nguyên màn hình khóa
+      document.getElementById("error-msg").textContent = "Sai mật khẩu mất rồi! Thử lại nha 😢";
+      document.getElementById("pwd-input").value = "";
+    }
   }
+
+  // Cho phép bấm phím Enter để xác nhận mật khẩu luôn cho nhanh
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && document.getElementById("lock-screen")) {
+      checkPassword();
+    }
+  });
+</script>
 </script>
   <body>
     <div id="flash-overlay"></div>
