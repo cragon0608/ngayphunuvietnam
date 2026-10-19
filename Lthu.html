@@ -60,6 +60,31 @@
         z-index: 1;
       }
 
+      /* LỚP KHÓA BẢO MẬT NỀN TRẮNG */
+      #lock-screen {
+        position: fixed;
+        inset: 0;
+        background: #ffffff;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #222;
+        font-family: var(--sans);
+        text-align: center;
+        padding: 20px;
+      }
+      .lock-box {
+        background: #fcfcfc;
+        border: 2px solid #000;
+        padding: 35px 25px;
+        border-radius: 12px;
+        max-width: 360px;
+        width: 100%;
+        box-shadow: 5px 5px 0px #000;
+      }
+
       /* BƯỚC 1: TRANG TRẮNG NGỚ NGẨN (Cú lừa) */
       #stage-countdown {
         position: fixed;
@@ -268,7 +293,7 @@
       }
       .hidden-message {
         position: absolute;
-        inset: 0; /* Trải rộng toàn bộ khung */
+        inset: 0;
         padding: 1rem;
         font-size: 0.88rem;
         line-height: 1.6;
@@ -276,51 +301,26 @@
         font-family: var(--sans);
         z-index: 1;
         text-align: center;
-        overflow-y: auto; /* Cho phép lướt/cuộn dọc xuống dưới khi văn bản dài */
+        overflow-y: auto;
         box-sizing: border-box;
+        text-shadow: 0 0 10px rgba(255,217,168,0.5);
       }
       #scratchCanvas { position: absolute; top: 0; left: 0; cursor: pointer; z-index: 2; touch-action: none; transition: opacity 0.8s ease, transform 0.8s ease; }
     </style>
   </head>
-<!-- LỚP KHÓA BẢO MẬT MẬT KHẨU -->
-<div id="lock-screen" style="position:fixed; inset:0; background:radial-gradient(circle at 50% 20%, #2b083d, #09010f 90%); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-family:'Be Vietnam Pro', sans-serif; text-align:center; padding:20px;">
-  <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,182,213,0.4); padding:30px 20px; border-radius:24px; backdrop-filter:blur(20px); max-width:350px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
-    <h2 style="margin-top:0; font-family:'Playfair Display', serif; color:#ffd9a8;">🔒 Thiệp Riêng Tư</h2>
-    <p style="font-size:0.9rem; color:#ffe6f0; margin-bottom:20px;">Nhập sinh nhật bản thân để mở món quà bí mật này nhé:(VD:01022008)</p>
-    <input type="password" id="pwd-input" placeholder="Nhập mật khẩu..." style="width:80%; padding:10px 15px; border-radius:99px; border:1px solid rgba(255,182,213,0.6); background:rgba(255,255,255,0.05); color:#fff; font-size:15px; outline:none; text-align:center; margin-bottom:12px;">
-    <br>
-    <button onclick="checkPassword()" style="padding:10px 25px; border-radius:99px; border:none; background:linear-gradient(135deg, #ff6fae, #ff3d84); color:#fff; font-weight:600; cursor:pointer; box-shadow:0 0 20px rgba(255,61,132,0.5);">Mở khóa 💌</button>
-    <p id="error-msg" style="color:#ff6b81; margin-top:12px; font-size:0.85rem; min-height:20px;"></p>
-  </div>
-</div>
-
-<script>
-  function checkPassword() {
-    // Đặt mật khẩu bạn muốn tại đây (ví dụ: "honglac")
-    const secretPassword = "04072008"; 
-    const userInput = document.getElementById("pwd-input").value;
-    
-    if (userInput === secretPassword) {
-      // Đúng mật khẩu -> Ẩn bảng khóa đi để vào thiệp
-      const lockScreen = document.getElementById("lock-screen");
-      lockScreen.style.opacity = "0";
-      lockScreen.style.transition = "opacity 0.6s ease";
-      setTimeout(() => lockScreen.remove(), 600);
-    } else {
-      // Sai mật khẩu -> Báo lỗi và giữ nguyên màn hình khóa
-      document.getElementById("error-msg").textContent = "Sai mật khẩu mất rồi! Thử lại nha 😢";
-      document.getElementById("pwd-input").value = "";
-    }
-  }
-
-  // Cho phép bấm phím Enter để xác nhận mật khẩu luôn cho nhanh
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && document.getElementById("lock-screen")) {
-      checkPassword();
-    }
-  });
-</script>
   <body>
+    <!-- LỚP KHÓA BẢO MẬT NỀN TRẮNG -->
+    <div id="lock-screen">
+      <div class="lock-box">
+        <h2 style="margin-top:0; font-family:'Times New Roman', Times, serif; font-size:2rem; color:#000;">🔒 BÍ MẬT</h2>
+        <p style="font-size:0.95rem; color:#444; margin-bottom:20px;">Nhập sinh nhật của bản thân vô (VD:01022000):</p>
+        <input type="password" id="pwd-input" placeholder="Nhập mật khẩu..." style="width:85%; padding:12px 15px; border-radius:8px; border:2px solid #000; background:#fff; color:#000; font-size:16px; outline:none; text-align:center; margin-bottom:15px;">
+        <br>
+        <button onclick="checkPassword()" style="padding:10px 25px; border-radius:8px; border:2px solid #000; background:#ff0000; color:#fff; font-weight:bold; font-size:1rem; cursor:pointer; box-shadow: 3px 3px 0px #000;">Mở khóa 💌</button>
+        <p id="error-msg" style="color:#ff0000; margin-top:12px; font-size:0.85rem; min-height:20px; font-weight:bold;"></p>
+      </div>
+    </div>
+
     <div id="flash-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
@@ -359,6 +359,27 @@
     </div>
 
     <script>
+      const secretPassword = "04072008";
+
+      function checkPassword() {
+        const userInput = document.getElementById("pwd-input").value;
+        if (userInput === secretPassword) {
+          const lockScreen = document.getElementById("lock-screen");
+          lockScreen.style.opacity = "0";
+          lockScreen.style.transition = "opacity 0.5s ease";
+          setTimeout(() => lockScreen.remove(), 500);
+        } else {
+          document.getElementById("error-msg").textContent = "Sai mật khẩu mất rồi! 😢";
+          document.getElementById("pwd-input").value = "";
+        }
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && document.getElementById("lock-screen")) {
+          checkPassword();
+        }
+      });
+
       const CFG = {
         l1: "CHÚC MỪNG 20/10",
         l2: "Lê Thư",
@@ -392,7 +413,6 @@
           stars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 2.2, alpha: Math.random() });
         }
 
-        // Sao băng chớp nhoáng
         class ShootingStar {
           constructor() { this.reset(); }
           reset() {
@@ -482,7 +502,6 @@
         }
         loop();
 
-        // Pháo hoa tự động bắn liên tục
         setInterval(() => {
           launchFW(Math.random() * width, Math.random() * (height * 0.6));
         }, 900);
@@ -494,7 +513,7 @@
         };
       }
 
-      // --- XỬ LÝ BƯỚC 1: ĐẾM NGƯỢC NỀN TRẮNG (CÚ LỪA + CHỚP SÁNG) ---
+      // --- XỬ LÝ BƯỚC 1: ĐẾM NGƯỢC NỀN TRẮNG ---
       let cdCount = 3;
       const cdNumberEl = $("cd-number");
       const stageCd = $("stage-countdown");
@@ -510,7 +529,6 @@
         } else {
           clearInterval(cdInterval);
           
-          // Kích hoạt hiệu ứng chớp sáng điện ảnh
           flashOverlay.classList.add("active");
           setTimeout(() => {
             document.body.classList.add("magic-bg");
@@ -631,7 +649,6 @@
         if (e.target.id !== "btn") decode();
       });
 
-      // Hiệu ứng nghiêng 3D cho thiệp
       const cardBox = $("cardBox");
       window.addEventListener("mousemove", (e) => {
         if (!document.getElementById("card").classList.contains("show")) return;
@@ -640,7 +657,6 @@
         cardBox.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${-x}deg) scale(1.02)`;
       });
 
-      // --- XỬ LÝ BƯỚC 3: THẺ CÀO 60% TỰ ĐỘNG BÙNG NỔ ---
       function showCard() {
         $("stage-decode").classList.add("hide");
         $("card").classList.add("show");
